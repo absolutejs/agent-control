@@ -6,7 +6,7 @@ export const manifest = defineManifest<Record<string, never>>()({
     accent: "#dc2626",
     category: "security",
     description:
-      "Authenticated operator API and CSP-hardened console for agent inventory, approvals, runs, budgets, delegations, memory metadata, reputation, durable kill switches, and leased idempotent operations.",
+      "Authenticated operator API, CSP-hardened console, and bound plan-then-execute playground for approvals, runs, budgets, delegations, memory metadata, reputation, durable kill switches, and leased idempotent operations.",
     docsUrl: "https://github.com/absolutejs/agent-control",
     name: "@absolutejs/agent-control",
     tagline: "See and stop every capability an agent holds.",

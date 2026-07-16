@@ -1,7 +1,7 @@
 {
   "name": "@absolutejs/agent-control",
-  "version": "0.2.0",
-  "description": "Authenticated AI agent operator API and console for approvals, runs, delegations, memory, reputation, and kill switches.",
+  "version": "0.3.0",
+  "description": "Authenticated AI agent operator API, console, and bound plan-then-execute playground.",
   "type": "module",
   "license": "MIT",
   "repository": {

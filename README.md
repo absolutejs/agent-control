@@ -32,3 +32,10 @@ all remote data with DOM `textContent`, cannot be framed, stores no cache, and
 has no third-party assets. The data adapter keeps it provider-neutral and lets
 applications compose `@absolutejs/agency`, `agent-runtime`, `agent-memory`, and
 `agent-reputation` without creating hard dependencies.
+
+`createAgentPlaygroundHandler()` adds a provider-neutral plan-then-execute UI
+and API. Planning is a separate, explicitly effect-free adapter operation. The
+server stores the full input and only returns its digest, expires plans quickly,
+binds them to the operator, refuses denied or approval-pending plans, and uses
+the same leased idempotency store for execution. The browser cannot mutate a
+plan between review and execution.
