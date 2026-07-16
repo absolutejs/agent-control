@@ -1,5 +1,7 @@
 import type { AgentControlPlane } from "@absolutejs/agency";
 
+export * from "./console";
+
 export type Operator = { id: string; scopes: readonly string[] };
 export type OperationRecord = {
   digest: string;

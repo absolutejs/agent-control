@@ -1,12 +1,12 @@
 {
   "name": "@absolutejs/agent-control",
-  "version": "0.1.0",
-  "description": "Authenticated operator API for AI agent inventory, kill switches, revocation, and restoration.",
+  "version": "0.2.0",
+  "description": "Authenticated AI agent operator API and console for approvals, runs, delegations, memory, reputation, and kill switches.",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/absolutejs/agent-control.git"
+    "url": "git+https://github.com/absolutejs/agent-control.git"
   },
   "publishConfig": {
     "access": "public"
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@absolutejs/agency": "^0.4.0",
-    "@absolutejs/manifest": "^0.2.0",
+    "@absolutejs/manifest": "^0.3.0",
     "@sinclair/typebox": "^0.34.0"
   },
   "devDependencies": {
