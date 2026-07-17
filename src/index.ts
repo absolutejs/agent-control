@@ -94,12 +94,32 @@ export const createAgentControlHandler =
       (action !== "revoke" && action !== "restore")
     )
       return new Response(null, { status: 405 });
-    const body = (await request.json().catch(() => undefined)) as
-      | { operationId?: string; reason?: string }
-      | undefined;
-    if (!body?.operationId || !body.reason)
+    if (
+      request.headers.get("origin") !== url.origin ||
+      request.headers.get("x-agent-control-intent") !== "mutate"
+    )
+      return new Response("Cross-site mutation denied", { status: 403 });
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 4_096)
       return Response.json(
-        { error: "operationId and reason are required" },
+        { error: "Request body is too large" },
+        { status: 413 },
+      );
+    const body = (() => {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return undefined;
+      }
+    })() as { operationId?: string; reason?: string } | undefined;
+    if (
+      !body?.operationId ||
+      body.operationId.length > 200 ||
+      !body.reason ||
+      body.reason.length > 1_000
+    )
+      return Response.json(
+        { error: "A bounded operationId and reason are required" },
         { status: 400 },
       );
     const digest = await hash({ action, agentId, reason: body.reason });

@@ -6,7 +6,8 @@ before cleanup, reports partial source failures, restores deliberately, and uses
 leased idempotency records so operator retries cannot change the requested input.
 
 Scopes are `agents:read`, `agents:revoke`, and `agents:restore`. Mutations require
-an `operationId` and `reason`; PostgreSQL operations can be safely reclaimed
+an `operationId`, bounded `reason`, same-origin `Origin` header, and
+`X-Agent-Control-Intent: mutate`; PostgreSQL operations can be safely reclaimed
 after a crashed operator process's lease expires.
 
 `createAgentControlConsoleHandler()` adds a dependency-free authenticated
