@@ -2,6 +2,23 @@ import { defineManifest } from "@absolutejs/manifest";
 import { Type } from "@sinclair/typebox";
 export const manifest = defineManifest<Record<string, never>>()({
   contract: 2,
+  discovery: {
+    audiences: ["platform-operators", "security-teams"],
+    intents: [
+      "inspect agent activity",
+      "revoke agent access",
+      "operate an agent kill switch",
+    ],
+    keywords: [
+      "agents",
+      "operations",
+      "approvals",
+      "revocation",
+      "kill-switch",
+      "console",
+    ],
+    protocols: ["AbsoluteJS Agent Control"],
+  },
   identity: {
     accent: "#dc2626",
     category: "security",
