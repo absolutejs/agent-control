@@ -34,6 +34,9 @@ has no third-party assets. The data adapter keeps it provider-neutral and lets
 applications compose `@absolutejs/agency`, `agent-runtime`, `agent-memory`, and
 `agent-reputation` without creating hard dependencies.
 
+The PostgreSQL operation store accepts readonly query results, so the same
+small Bun SQL adapter can be shared with Agency without copying result rows.
+
 `createAgentPlaygroundHandler()` adds a provider-neutral plan-then-execute UI
 and API. Planning is a separate, explicitly effect-free adapter operation. The
 server stores the full input and only returns its digest, expires plans quickly,

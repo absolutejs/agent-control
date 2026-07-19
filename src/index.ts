@@ -152,7 +152,7 @@ export const createAgentControlHandler =
     return Response.json(response);
   };
 
-export type ControlSqlResult<Row> = { rows: Row[] };
+export type ControlSqlResult<Row> = { rows: ReadonlyArray<Row> };
 export type ControlSqlClient = {
   query: <Row = Record<string, unknown>>(
     text: string,
