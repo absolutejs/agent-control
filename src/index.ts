@@ -1,4 +1,12 @@
 import type { AgentControlPlane } from "@absolutejs/agency";
+import { and, eq, isNull, lte } from "drizzle-orm";
+import {
+  bigint,
+  customType,
+  pgSchema,
+  text,
+  type PgAsyncDatabase,
+} from "drizzle-orm/pg-core";
 
 export * from "./console";
 export * from "./playground";
@@ -42,6 +50,86 @@ export const createMemoryOperationStore = (): OperationStore => {
       rows.set(key, { ...row, response: structuredClone(response) });
       return true;
     },
+  };
+};
+type AnyPgDatabase = PgAsyncDatabase<any, any>;
+const portableJsonb = customType<{ data: unknown; driverData: unknown }>({
+  dataType: () => "jsonb",
+  fromDriver: (value) =>
+    typeof value === "string" ? JSON.parse(value) : value,
+  toDriver: (value) => JSON.stringify(value),
+});
+const nsOf = (value: string) => {
+  if (!/^[a-z_][a-z0-9_]*$/.test(value))
+    throw new Error("Control namespace must be a simple identifier");
+  return value;
+};
+export const agentControlDrizzleSchema = (namespace = "agent_control") => {
+  const schema = pgSchema(nsOf(namespace));
+  const operations = schema.table("operations", {
+    digest: text().notNull(),
+    lease_until: bigint({ mode: "number" }).notNull(),
+    operation_key: text().primaryKey(),
+    response: portableJsonb(),
+  });
+  return { operations };
+};
+export const createDrizzleOperationStore = <DB extends AnyPgDatabase>(
+  db: DB,
+  options: { namespace?: string } = {},
+): OperationStore => {
+  const { operations } = agentControlDrizzleSchema(options.namespace);
+  return {
+    claim: async (key, digest, now, leaseMs) => {
+      const [claimed] = await db
+        .insert(operations)
+        .values({
+          digest,
+          lease_until: now + leaseMs,
+          operation_key: key,
+        })
+        .onConflictDoUpdate({
+          set: { lease_until: now + leaseMs },
+          setWhere: and(
+            eq(operations.digest, digest),
+            isNull(operations.response),
+            lte(operations.lease_until, now),
+          ),
+          target: operations.operation_key,
+        })
+        .returning({ response: operations.response });
+      if (claimed)
+        return {
+          acquired: claimed.response === null || claimed.response === undefined,
+        };
+      const [existing] = await db
+        .select({ digest: operations.digest, response: operations.response })
+        .from(operations)
+        .where(eq(operations.operation_key, key))
+        .limit(1);
+      if (existing?.digest !== undefined && existing.digest !== digest)
+        throw new Error("Idempotency key reused with different input");
+      return {
+        acquired: false,
+        ...(existing?.response === null || existing?.response === undefined
+          ? {}
+          : { response: existing.response }),
+      };
+    },
+    complete: async (key, digest, response) =>
+      (
+        await db
+          .update(operations)
+          .set({ response })
+          .where(
+            and(
+              eq(operations.operation_key, key),
+              eq(operations.digest, digest),
+              isNull(operations.response),
+            ),
+          )
+          .returning({ id: operations.operation_key })
+      ).length === 1,
   };
 };
 const hash = async (value: unknown) =>
@@ -158,11 +246,6 @@ export type ControlSqlClient = {
     text: string,
     values?: readonly unknown[],
   ) => Promise<ControlSqlResult<Row>>;
-};
-const nsOf = (value: string) => {
-  if (!/^[a-z_][a-z0-9_]*$/.test(value))
-    throw new Error("Control namespace must be a simple identifier");
-  return value;
 };
 export const agentControlPostgresSchemaSql = (namespace = "agent_control") => {
   const ns = nsOf(namespace);
