@@ -1,5 +1,5 @@
 import type { AgentControlPlane } from "@absolutejs/agency";
-import { and, eq, isNull, lte } from "drizzle-orm";
+import { and, eq, isNull, lte, sql } from "drizzle-orm";
 import {
   bigint,
   customType,
@@ -59,6 +59,8 @@ const portableJsonb = customType<{ data: unknown; driverData: unknown }>({
     typeof value === "string" ? JSON.parse(value) : value,
   toDriver: (value) => JSON.stringify(value),
 });
+const encodedJsonb = <Value>(value: Value) =>
+  sql<Value>`${JSON.stringify(value)}::text::jsonb`;
 const nsOf = (value: string) => {
   if (!/^[a-z_][a-z0-9_]*$/.test(value))
     throw new Error("Control namespace must be a simple identifier");
@@ -120,7 +122,7 @@ export const createDrizzleOperationStore = <DB extends AnyPgDatabase>(
       (
         await db
           .update(operations)
-          .set({ response })
+          .set({ response: encodedJsonb(response) })
           .where(
             and(
               eq(operations.operation_key, key),
