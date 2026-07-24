@@ -5,6 +5,11 @@ plane. It inventories every registered source, activates the durable kill switch
 before cleanup, reports partial source failures, restores deliberately, and uses
 leased idempotency records so operator retries cannot change the requested input.
 
+Agency is a required host peer (`>=0.7.1 <0.8.0`), not a bundled dependency.
+The operator surface must inspect and decide against the host's one durable
+Agency ledger. This package tests against exactly `0.7.1`; a new Agency minor
+requires an explicit compatibility release.
+
 Scopes are `agents:read`, `agents:revoke`, and `agents:restore`. Mutations require
 an `operationId`, bounded `reason`, same-origin `Origin` header, and
 `X-Agent-Control-Intent: mutate`; PostgreSQL operations can be safely reclaimed
